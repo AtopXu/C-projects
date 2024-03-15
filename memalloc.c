@@ -82,8 +82,8 @@ void free(void *block)
     void *programbreak;
     if (!block)
         return;
-    pthread_mutex_lock(global_malloc_loc);
-    programbreak = sbkr(0);
+    pthread_mutex_lock(&global_malloc_loc);
+    programbreak = sbrk(0);
     header = (header_t *)block - 1;
     /*start update line
     if block is end of data program,release memory to OS
@@ -104,11 +104,11 @@ void free(void *block)
             }
         }
         sbrk(0 - sizeof(header_t) - header->s.size);
-        pthread_mutex_unloc(&global_malloc_loc);
+        pthread_mutex_unlock(&global_malloc_loc);
         return;
    }
    header->s.is_free = 1;
-   pthread_mutex_unloc(&global_malloc_loc);
+   pthread_mutex_unlock(&global_malloc_loc);
 }
 
 /*when return type is not int ,we use void to define function*/
@@ -125,6 +125,7 @@ void *calloc(size_t num, size_t nsize)
     if (block == NULL)
         return NULL;
     memset(block, 0, size);
+    printf("block_address:%p\n", block);
     return block;
 }
 
@@ -148,6 +149,7 @@ void *relloc(void *block, size_t rsize)
         memcpy(tmp, block, header->s.size);
         free(block);
     }
+    printf("block_address:%p\n", tmp);
     return tmp;
 }
 
